@@ -1,8 +1,11 @@
+import 'package:coderebased/ui/main/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'screens/splash.dart';
 import 'firebase_options.dart';
+import 'ui/splash.dart';
+import 'ui/auth/login.dart';
+import 'ui/auth/signup.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,7 +50,14 @@ class MyApp extends ConsumerWidget {
           ),
         ),
       ),
-      home: const SplashScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
+        '/main': (context) => const MainPage(),
+        '/home': (context) => const MainPage(),
+      },
     );
   }
 }

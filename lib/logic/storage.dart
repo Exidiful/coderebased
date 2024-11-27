@@ -32,6 +32,12 @@ class RepoDirectoryNotifier extends StateNotifier<String> {
 }
 
 // Provider for the StorageService
+final storageProvider = Provider<StorageService>((ref) {
+  return StorageService(
+    currentPathProvider: StateProvider((ref) => ''),
+  );
+});
+
 class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final StateProvider<String> _currentPathProvider;

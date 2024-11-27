@@ -41,46 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDHyFrCnsuAlnqjfcMQ4h1keQ8ooICX7g8',
-    appId: '1:1035093977226:web:0b6c3ddce2493c81372573',
-    messagingSenderId: '1035093977226',
-    projectId: 'abc-interview',
-    authDomain: 'abc-interview.firebaseapp.com',
-    storageBucket: 'abc-interview.firebasestorage.app',
+    apiKey: 'AIzaSyBfT26idc5iwfQYDaDkTtAgCDmzo9lqJWs',
+    appId: '1:461474201195:web:34a18dbac9e2f82ab77b2e',
+    messagingSenderId: '461474201195',
+    projectId: 'utbcodebase',
+    authDomain: 'utbcodebase.firebaseapp.com',
+    storageBucket: 'utbcodebase.appspot.com',
+    measurementId: 'G-ZNH7F1B0SH',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA7vUN7fk10MsM-RAEl7bysF0gjqzFS00E',
-    appId: '1:1035093977226:android:ea49d70cf62f5a40372573',
-    messagingSenderId: '1035093977226',
-    projectId: 'abc-interview',
-    storageBucket: 'abc-interview.firebasestorage.app',
+    apiKey: 'AIzaSyDowT6tm6JWUq1Utny2xTG8C33RAinUsG8',
+    appId: '1:461474201195:android:61835fc2e19b1537b77b2e',
+    messagingSenderId: '461474201195',
+    projectId: 'utbcodebase',
+    storageBucket: 'utbcodebase.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDCY5bvcsmxunQW1xJ7mGD3Mv2yUhKcbQI',
-    appId: '1:1035093977226:ios:c94161a21dc3d4ce372573',
-    messagingSenderId: '1035093977226',
-    projectId: 'abc-interview',
-    storageBucket: 'abc-interview.firebasestorage.app',
-    iosBundleId: 'com.example.coderebased',
+    apiKey: 'AIzaSyCfq_JN2Id5jrMGA-sFn_QROzICuZO-dcg',
+    appId: '1:461474201195:ios:cf36026922652009b77b2e',
+    messagingSenderId: '461474201195',
+    projectId: 'utbcodebase',
+    storageBucket: 'utbcodebase.appspot.com',
+    iosBundleId: 'com.example.codebase',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDCY5bvcsmxunQW1xJ7mGD3Mv2yUhKcbQI',
-    appId: '1:1035093977226:ios:c94161a21dc3d4ce372573',
-    messagingSenderId: '1035093977226',
-    projectId: 'abc-interview',
-    storageBucket: 'abc-interview.firebasestorage.app',
-    iosBundleId: 'com.example.coderebased',
+    apiKey: 'AIzaSyCfq_JN2Id5jrMGA-sFn_QROzICuZO-dcg',
+    appId: '1:461474201195:ios:cf36026922652009b77b2e',
+    messagingSenderId: '461474201195',
+    projectId: 'utbcodebase',
+    storageBucket: 'utbcodebase.appspot.com',
+    iosBundleId: 'com.example.codebase',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDHyFrCnsuAlnqjfcMQ4h1keQ8ooICX7g8',
-    appId: '1:1035093977226:web:be235f59b88f1b9d372573',
-    messagingSenderId: '1035093977226',
-    projectId: 'abc-interview',
-    authDomain: 'abc-interview.firebaseapp.com',
-    storageBucket: 'abc-interview.firebasestorage.app',
+    apiKey: 'AIzaSyBfT26idc5iwfQYDaDkTtAgCDmzo9lqJWs',
+    appId: '1:461474201195:web:3de09523a4302069b77b2e',
+    messagingSenderId: '461474201195',
+    projectId: 'utbcodebase',
+    authDomain: 'utbcodebase.firebaseapp.com',
+    storageBucket: 'utbcodebase.appspot.com',
+    measurementId: 'G-SDDH5E5Q52',
   );
 }

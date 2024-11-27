@@ -64,4 +64,34 @@ class UserModel {
       'updatedAt': updatedAt ?? FieldValue.serverTimestamp(),
     };
   }
+
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? studentId,
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+    String? bio,
+    String? profileImageUrl,
+    List<String>? skills,
+    List<String>? programmingLanguages,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      studentId: studentId ?? this.studentId,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      bio: bio ?? this.bio,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      skills: skills ?? this.skills,
+      programmingLanguages: programmingLanguages ?? this.programmingLanguages,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

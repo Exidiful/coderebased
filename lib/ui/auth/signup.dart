@@ -2,23 +2,13 @@
 
 import 'dart:io';
 
-import 'package:coderebased/logic/auth.dart';
 import 'package:coderebased/logic/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../logic/auth.dart';
 import 'login.dart';
-
-final authProvider = ChangeNotifierProvider<AuthProvider>((ref) {
-  return AuthProvider();
-});
-
-final storageProvider = Provider<StorageService>((ref) {
-  return StorageService(
-      currentPathProvider: ref.watch(
-          repoDirectoryProvider as ProviderListenable<StateProvider<String>>));
-});
 
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -32,7 +22,6 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   final _studentIdController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
   final _phoneNumberController = TextEditingController();
   final _bioController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -44,28 +33,15 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _emailController.text =
-        "BH${_studentIdController.text}@utb.edu.bh"; // Initialize email
-  }
-
-  @override
   void dispose() {
     _studentIdController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _emailController.dispose();
     _phoneNumberController.dispose();
     _bioController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  void _updateEmail() {
-    // Update email whenever student ID changes
-    _emailController.text = "BH${_studentIdController.text}@utb.edu.bh";
   }
 
   Future<void> _pickImage() async {
@@ -75,42 +51,67 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     }
   }
 
-  void _signup() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  Future<void> _signup() async {
+    if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isLoading = true);
+
+    try {
       final auth = ref.read(authProvider);
-      final storage = ref.read(storageProvider);
 
-      try {
-        // Sign up the user first
-        final userId = await auth.signUpWithEmailAndPassword(
-          _studentIdController.text.trim(),
-          _passwordController.text.trim(),
-        );
+      // First create the user account
+      await auth.signUpWithStudentId(
+        studentId: _studentIdController.text.trim(),
+        password: _passwordController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        phoneNumber: _phoneNumberController.text.trim(),
+        userData: {
+          'studentId': _studentIdController.text.trim(),
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'phoneNumber': _phoneNumberController.text.trim(),
+          'bio': _bioController.text.trim(),
+        },
+      );
 
-        // Upload profile image if one was selected
-        String? profileImageUrl;
-        if (_profileImage != null) {
-          profileImageUrl = await storage.uploadProfileImage(_profileImage!);
+      // After successful signup, upload profile image if selected
+      if (_profileImage != null && mounted && auth.isAuthenticated) {
+        try {
+          final storage = ref.read(storageProvider);
+          final profileImageUrl = await storage.uploadProfileImage(_profileImage!);
+          
+          // Update user profile with image URL
+          await auth.updateUserProfile({
+            'profileImageUrl': profileImageUrl,
+          });
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile image upload failed. You can try uploading it later from your profile.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
         }
+      }
 
-        // TODO: Update user profile with additional information
-        // You might want to create a method in AuthProvider to update user profile
-        // with firstName, lastName, phoneNumber, bio, and profileImageUrl
-
-        // Navigate to the main page after successful signup
+      if (mounted && auth.isAuthenticated) {
         Navigator.pushReplacementNamed(context, '/main');
-      } catch (e) {
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Signup failed: $e')),
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
         );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -123,10 +124,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
+            Navigator.pushReplacementNamed(context, '/login');
           },
         ),
       ),
@@ -139,6 +137,36 @@ class _SignupPageState extends ConsumerState<SignupPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Profile Image Picker
+                Center(
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage: _profileImage != null
+                            ? FileImage(_profileImage!)
+                            : null,
+                        child: _profileImage == null
+                            ? const Icon(Icons.person, size: 50)
+                            : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.camera_alt),
+                          onPressed: _pickImage,
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24.0),
+
                 // First name and last name fields
                 TextFormField(
                   controller: _firstNameController,
@@ -163,31 +191,19 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Student ID field with email preview
+                // Student ID field
                 TextFormField(
                   controller: _studentIdController,
-                  decoration: const InputDecoration(labelText: 'Student ID'),
-                  onChanged: (text) => _updateEmail(),
+                  decoration: const InputDecoration(
+                    labelText: 'Student ID',
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your student ID';
                     }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  enabled: false,
-                  validator: (value) {
-                    // Basic email format validation
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
+                    // Add student ID format validation if needed
                     return null;
                   },
                 ),
@@ -196,26 +212,39 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 // Phone number and bio fields
                 TextFormField(
                   controller: _phoneNumberController,
-                  decoration: const InputDecoration(labelText: 'Phone Number'),
-                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone Number',
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _bioController,
-                  decoration: const InputDecoration(labelText: 'Bio'),
+                  decoration: const InputDecoration(
+                    labelText: 'Bio',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16.0),
 
-                // Password and confirm password fields with visibility toggle
+                // Password fields
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _isObscure,
                   decoration: InputDecoration(
                     labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                          _isObscure ? Icons.visibility : Icons.visibility_off),
+                        _isObscure ? Icons.visibility : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isObscure = !_isObscure;
@@ -239,10 +268,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   obscureText: _isObscureConfirm,
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_isObscureConfirm
-                          ? Icons.visibility
-                          : Icons.visibility_off),
+                      icon: Icon(
+                        _isObscureConfirm ? Icons.visibility : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isObscureConfirm = !_isObscureConfirm;
@@ -260,26 +290,31 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16.0),
-
-                // Profile image selection
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text('Select Profile Image'),
-                ),
-                if (_profileImage != null)
-                  Image.file(
-                    File(_profileImage!.path),
-                    height: 100,
-                  ),
-                const SizedBox(height: 32.0),
+                const SizedBox(height: 24.0),
 
                 // Signup button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _signup,
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text('Signup'),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _signup,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            'Sign Up',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                  ),
+                ),
+
+                // Login link
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: const Text('Already have an account? Login'),
                 ),
               ],
             ),
